@@ -1,4 +1,4 @@
-# IP_Updater
+# Server_IP_Updater
  A Python script that can send emails to notify dynamic IP changes using Python's built-in APIs.
 
 ## Introduction
