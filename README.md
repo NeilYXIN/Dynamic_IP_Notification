@@ -1,20 +1,17 @@
 # IP_Updater
- A Python script that can send out emails to notify dynamic IP changes.
+ A Python script that can send emails to notify dynamic IP changes using Python's built-in APIs.
 
 ## Introduction
 
-This Python script can be deployed on a desktop/workstation/server with dynamically assigned IP to detect IP changes and send out email notifications.
-
-It only uses Python's built-in APIs.
-
+This Python script can detect IP changes and send the latest IP through email notifications. This can be helpful when you want to remotely access a machine but its IP is dynamically assigned.
 
 ## How it works
 
-- This script compares the latest IP address with the previous one cached in a .txt file.  
+- This script compares the latest IP address with the previous IP cached in a .txt file.  
 
-- When initialized or IP change detected, an email notification containing the latest IP address will be sent.
+- When initialized or IP change detected, an email will be sent to notify the latest IP.
 
-- This script uses Gmail server as default, you will need a Gmail account to send out the email notifications.
+- This script uses Gmail as default, you need a Gmail account to send emails.
 
 Script Actions:  
 
@@ -36,13 +33,13 @@ Change all **{** replaceable parts **}** in the code before first use.
 Using this script is easy:
 
         python ip_updater.py    
-Note: This is a one-time detection. You can set up a scheduled task using third-party libraries, such as Cron, to periodically detect IP changes.
+Note: This is a one-time detection. You can set up a scheduled task using third-party libraries (e.g., Cron), to automate the IP change detection in a periodical manner.  
 
 ## Security Risks/Known Issues
 
-- The email password in the example code is **NOT** protected. You need to be aware of potential risks like password leakage. Please ONLY use this script in a trusted environment or replace the password authentication with a secure API.
+- The email password is **NOT** protected. You need to be aware of the password leakage risk. Please **ONLY** use this in a trusted environment or replace the password authentication with a secure API.
 
-- This script is tested on macOS 11.5.2 & Ubuntu 20.04 LTS running Python 3.8.
+- Tested on macOS 11.5.2 & Ubuntu 20.04 LTS running Python 3.8.
 
 ## License
 
