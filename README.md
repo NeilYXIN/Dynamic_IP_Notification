@@ -3,7 +3,7 @@
 
 ## Introduction
 
-This Python script can be deployed to detect IP changes and send out email notifications.
+This Python script can be deployed on a desktop/workstation/server with dynamically assigned IP to detect IP changes and send out email notifications.
 
 It only uses Python's built-in APIs.
 
