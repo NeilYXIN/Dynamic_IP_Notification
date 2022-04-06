@@ -1,45 +1,75 @@
 # Server_IP_Updater
- A Python script that can send emails to notify dynamic IP changes using Python's built-in APIs.
 
 ## Introduction
 
-This Python script can detect IP changes and send the latest IP through email notifications. This can be helpful when you want to remotely access a machine but its IP is dynamically assigned.
+ A Python script that sends email notifications when IP change is detected.
 
-## How it works
+Can be helpful when you want to remotely access a machine whose IP is dynamically assigned.
 
-- This script compares the latest IP address with the previous IP cached in a .txt file.  
+Now supports Google Gmail API and OAuth 2.0.
+
+## Workflow
+
+- This script uses Gmail APIs, you need a Gmail account to get started.
+
+- This script compares the current IP address with the snapshot IP cached in a txt file.  
 
 - When initialized or IP change detected, an email will be sent to notify the latest IP.
 
-- This script uses Gmail as default, you need a Gmail account to send emails.
-
-Script Actions:  
-
-        if (used for the first time) {
-            create cache file;
-            send email notification;
+        if (initialize) {
+            create cache file
+            send email notification
         } else if (current IP = cached IP){
-            do nothing;
+            do nothing
         } else {
-            overwrite cache;
-            send email notification;
+            update cache
+            send email notification
         }
 
 
 ## How to Use
 
-Change all **{** replaceable parts **}** in the code before first use.
+### Install Google Client Library (Python)
+- Quick Start Guide: https://developers.google.com/gmail/api/quickstart/python
 
-Using this script is easy:
+        pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
-        python ip_updater.py    
-Note: This is a one-time detection. You can set up a scheduled task using third-party libraries (e.g., Cron), to automate the IP change detection in a periodical manner.  
+### Create Google Cloud Project and Download Credentials
+1. Create a Google Cloud project: https://developers.google.com/workspace/guides/create-project
 
-## Security Risks/Known Issues
+2. Create access credentials (Desktop app): https://developers.google.com/workspace/guides/create-credentials
 
-- The email password is **NOT** protected. You need to be aware of the password leakage risk. Please **ONLY** use this in a trusted environment or replace the password authentication with a secure API.
+3. Download credentials json file into the root directory and rename as "credentials.json".
 
-- Tested on macOS 11.5.2 & Ubuntu 20.04 LTS running Python 3.8.
+4. Go to Google Cloud Platform -> [Your Project] -> APIs & Services -> OAuth consent screen, add your Gmail account as a test user (or publish the app).
+
+### Initialization
+
+1. Change the sender_email and receiver_email in the main function before first use.
+
+2. Execute the Python script:
+
+        python ip_updater.py
+    
+    When executed for the first time, a Google authentication web page will prompt. 
+    
+3. Login with your Gmail account (must be added as a test user) and grant the sending email permission.
+
+4. Google OAuth API will generate a "token.json" file at the root directory.
+
+5. You are all set if no error occurs.
+
+### Automation
+Running this script is a one-time detection. 
+You can set up a scheduled task using third-party libraries, such as Cron, to periodically execute this script.  
+
+## Known Issues
+
+- Currently only supports Gmail account.
+- Tested on macOS 12.3.1 & Ubuntu 20.04 LTS running Python 3.8.
+
+- ~~The email password is **NOT** protected. You need to be aware of the password leakage risk. Please **ONLY** use this in a trusted environment or replace the password authentication with a secure API.~~
+
 
 ## License
 
