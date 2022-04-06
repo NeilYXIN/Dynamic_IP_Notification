@@ -45,7 +45,7 @@ Now supports Google Gmail API and OAuth 2.0.
 
 ### Initialization
 
-1. Change the sender_email and receiver_email in the main function before first use.
+1. Change the `sender_email` and `receiver_email` in the main function before first use.
 
 2. Execute the Python script:
 
