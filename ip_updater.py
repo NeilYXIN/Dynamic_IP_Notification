@@ -1,10 +1,3 @@
-import os.path
-import smtplib
-import socket
-import ssl
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-
 #  Copyright (c) 2021. Xin Yang
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,20 +19,56 @@ from email.mime.text import MIMEText
 #
 # run: python ip_updater.py
 
-# Please replace the information included in the brackets {}
-cache_path = "{./ip_cache.txt}" # Path for the IP cache file
-sender_email = "{sender@gmail.com}"
-receiver_email = "{receiver@gmail.com}"
-sender_pswd = "{password}" # Password of the sender email, only run in a trusted environment or replace with a secure authentication API
-msg_subject = "[IP Updater] {IP Change Detected}" # Email subject
+import os.path
+import socket
+import base64
+from email.mime.text import MIMEText
 
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+def initialize_gmail_api():
+    # If modifying these scopes, delete the file token.json.
+    SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+
+    """Shows basic usage of the Gmail API.
+    Lists the user's Gmail labels.
+    """
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
+    try:
+        # Call the Gmail API
+        service = build('gmail', 'v1', credentials=creds)
+    except HttpError as error:
+        # TODO(developer) - Handle errors from gmail API.
+        print(f'An error occurred: {error}')
+
+    return service
 
 # get current ip using socket
 def get_curr_ip():
     hostname = socket.gethostname()
     curr_ip = socket.gethostbyname(hostname)
     return curr_ip
-
 
 # Detect the existence of the IP cache file
 def cache_exist(cache_path):
@@ -48,49 +77,83 @@ def cache_exist(cache_path):
     else:
         return False
 
+def create_message(sender, to, subject, message_text):
+  """Create a message for an email.
 
-# Compose email content and send out
-def send_ip_email(new_ip):
-    # Compose a plain text email
-    message = MIMEMultipart("alternative")
-    message["Subject"] = msg_subject
-    message["From"] = sender_email
-    message["To"] = receiver_email
-    msg_text = "\n{Updated IP:\n" + new_ip + "\n}" # Modify your message accordingly, start with '\n' to separate message and header
-    msg_part = MIMEText(msg_text, "plain")
-    message.attach(msg_part)
+  Args:
+    sender: Email address of the sender.
+    to: Email address of the receiver.
+    subject: The subject of the email message.
+    message_text: The text of the email message.
 
-    # Connect with server and send email through SSL
-    context = ssl.create_default_context()
-    # Default server set as gmail, change accordingly
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(sender_email, sender_pswd)
-        server.sendmail(sender_email, receiver_email, message.as_string())
+  Returns:
+    An object containing a base64url encoded email object.
+  """
+  message = MIMEText(message_text)
+  message['to'] = to
+  message['from'] = sender
+  message['subject'] = subject
+  return {'raw': base64.urlsafe_b64encode(message.as_string().encode()).decode()}
 
+def send_message(service, user_id, message):
+  """Send an email message.
+
+  Args:
+    service: Authorized Gmail API service instance.
+    user_id: User's email address. The special value "me"
+    can be used to indicate the authenticated user.
+    message: Message to be sent.
+
+  Returns:
+    Sent Message.
+  """
+  try:
+    message = (service.users().messages().send(userId=user_id, body=message)
+               .execute())
+    print('Message Id: %s' % message['id'])
+    return message
+  except HttpError as error:
+    print('An error occurred: %s' % error)
+
+def send_gmail(service, sender_email, receiver_email, msg_subject, curr_ip):
+    msg_text = "\nIP updated:\n" + curr_ip # Modify your message accordingly, begin with '\n' to separate message and header
+    message = create_message(sender_email, receiver_email, msg_subject, msg_text)
+    send_message(service, sender_email, message)
 
 # If IP change detected, overwrite the cached IP, close cache file and send out email notification
-def update_ip(f, new_ip):
-    f.write(new_ip)
-    f.close()
-    send_ip_email(new_ip)
+def write_cache(cache_path, ip):
+    with open(cache_path, "w") as f:
+        f.write(ip)
 
+def read_cache(cache_path):
+    with open(cache_path, "r") as f:
+        cached_ip = f.readline()
+    return cached_ip
 
 if __name__ == "__main__":
-    curr_ip = get_curr_ip()
-    if not cache_exist(cache_path):
-        # Cache file doesn't exist, create cache file
-        f = open(cache_path, "w")
-        print("[IP Updater] Cache file created!")
-        # Send out email notification for initialization
-        update_ip(f, curr_ip)
-        print("[IP Updater] Initialized.\n", curr_ip)
+    # Please replace the information included in the brackets {}
+    cache_path = "ip_cache.txt" # Path for the cache file
+    sender_email = "XXXX@XXX.XXX" # Gmail ONLY
+    receiver_email = "XXXX@XXX.XXX"
+    msg_subject = "[IP Updater] IP Change Detected" # Email subject
 
+    service = initialize_gmail_api()
+    curr_ip = get_curr_ip()
+
+    if not cache_exist(cache_path):
+        # Cache file doesn't exist, create cache
+        write_cache(cache_path, curr_ip)
+        print("[IP Updater] Initialized: " + curr_ip)
+        # Send email notification
+        send_gmail(service, sender_email, receiver_email, msg_subject, curr_ip)
     else:
-        # Cache file exist, read cached IP and compare with the current one
-        f = open(cache_path, "r+")
-        cached_ip = f.readline()
+        # Compare with cached IP
+        cached_ip = read_cache(cache_path)
         if cached_ip != curr_ip:
-            update_ip(f, curr_ip)
-            print("[IP Updater] New IP detected!\n", cached_ip, "->", curr_ip)
+            # Update cache file
+            write_cache(cache_path, curr_ip)
+            print("[IP Updater] IP change detected: " + cached_ip + " -> " + curr_ip)
+            # Send email notification
+            send_gmail(service, sender_email, receiver_email, msg_subject, curr_ip)
         else:
-            print("[IP Updater] IP unchanged.\n", curr_ip)
+            print("[IP Updater] " + curr_ip)
