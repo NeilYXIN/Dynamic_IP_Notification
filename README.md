@@ -49,7 +49,7 @@ Now supports Google Gmail API and OAuth 2.0.
 
 2. Execute the Python script:
 
-        python ip_updater.py
+        python3 ip_updater.py
     
     When executed for the first time, Google authentication process will start in the terminal for headless servers. 
     Or replace line 54 with line 53 to prompt a webpage for authentication, if your server has a monitor. 
@@ -62,7 +62,12 @@ Now supports Google Gmail API and OAuth 2.0.
 
 ### Automation
 Running this script is a one-time detection. 
-You can set up a scheduled task using third-party libraries, such as Cron, to periodically execute this script.  
+You can set up a scheduled task using third-party libraries, such as Cron, to periodically execute this script.
+
+Below is an example of using [crontab](https://man7.org/linux/man-pages/man5/crontab.5.html) to periodically check the IP every 30 minutes, which remains valid even after a server reboot.
+
+    30 * * * * /usr/bin/python3 /YOUR/PATH/TO/ip_updater.py
+
 
 ## Known Issues
 
