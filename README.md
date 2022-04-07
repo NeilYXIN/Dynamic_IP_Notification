@@ -51,9 +51,10 @@ Now supports Google Gmail API and OAuth 2.0.
 
         python ip_updater.py
     
-    When executed for the first time, a Google authentication web page will prompt. 
+    When executed for the first time, Google authentication process will start in the terminal for headless servers. 
+    Or replace line 54 with line 53 to prompt a webpage for authentication, if your server has a monitor. 
     
-3. Login with your Gmail account (must be added as a test user) and grant the sending email permission.
+3. Follow the instructions in the terminal, login with your Gmail account (must be added as a test user) and grant the sending email permission.
 
 4. Google OAuth API will generate a "token.json" file at the root directory.
 
