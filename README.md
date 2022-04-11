@@ -1,4 +1,4 @@
-# Server_IP_Updater
+# Dynamic_IP_Notification
 
 ## Introduction
 
